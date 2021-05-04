@@ -1,8 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 void main() {
   runApp(MyApp());
+}
+
+class StreamSocket {
+  final _socketResponse = StreamController<String>();
+
+  void Function(String) get addResponse => _socketResponse.sink.add;
+
+  Stream<String> get getResponse => _socketResponse.stream;
+
+  void dispose() {
+    _socketResponse.close();
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -40,32 +54,57 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _connectToServer() {
     try {
-      // Socket Configuration
-      //TODO Change URL
-      IO.Socket socket = IO.io("http://192.168.43.58:3000/", <String, dynamic>{
+      IO.Socket socket = IO.io("http://192.168.0.102:3000/", <String, dynamic>{
         'transports': ['websocket'],
         'autoConnect': false,
       });
 
-      // Connect the socket
       socket.connect();
 
-      //expose socket outside function
       _socket = socket;
 
       // TODO HANDLE SOCKET EVENTS
-      // Server responds to emitted counter value it receives by broadcasting it
-      // To all connected sockets. This method catches that response and prints
-      // the data received from it
 
+      socket.on('message', (data) {
+        handleMessage(data);
+      });
       socket.on('counterResponse', (data) {
         print(data);
       });
+      socket.on('typing', handleTyping);
 
-      // ... More Events ...
+      socket.on('disconnect', (_) => print('disconnect'));
     } catch (e) {
       print(e);
     }
+  }
+
+  StreamSocket streamSocket = new StreamSocket();
+  void handleTyping(Map<String, dynamic> data) {
+    streamSocket.addResponse;
+    print(data);
+  }
+
+  void handleMessage(Map<String, dynamic> data) {
+    print(data);
+  }
+
+  sendTyping(bool typing) {
+    _socket.emit("typing", {
+      "id": _socket.id,
+      "typing": typing,
+    });
+  }
+
+  sendMessage(String message) {
+    _socket.emit(
+      "message",
+      {
+        "id": _socket.id,
+        "message": message, // Message to be sent
+        "timestamp": DateTime.now().millisecondsSinceEpoch,
+      },
+    );
   }
 
   // Sends the current value of the counter via socket.io to the server
@@ -86,7 +125,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _connectToServer();
   }
 
-  // The rest of this is the startup counter app with some minor changes
+  TextEditingController messageController = new TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,6 +142,30 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
+            ),
+            TextField(
+              controller: messageController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Enter a search term',
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                sendMessage(messageController.value.text);
+                messageController.clear();
+              },
+              child: Text(
+                "Send Message",
+              ),
+            ),
+            StreamBuilder(
+              stream: streamSocket.getResponse,
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                return Container(
+                  child: Text("-${snapshot.data}"),
+                );
+              },
             ),
           ],
         ),
