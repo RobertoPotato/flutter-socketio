@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter Chat Demo'),
     );
   }
 }
@@ -45,6 +45,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   IO.Socket _socket;
+  bool _isOnline = false;
+  List<Map<String, dynamic>> _messages = [];
 
   void _incrementCounter() {
     setState(() {
@@ -62,9 +64,26 @@ class _MyHomePageState extends State<MyHomePage> {
       socket.connect();
 
       _socket = socket;
+      socket.onConnect((data) {
+        print("CONNECTED TO SERVER");
+        setState(() {
+          _isOnline = true;
+        });
+      });
+
+      _socket.onConnectError((data) {
+        print("ERROR CONNECTING TO SERVER");
+        setState(() {
+          _isOnline = false;
+        });
+      });
+
+      _socket.onDisconnect((data) {
+        print("DISCONNECTED FROM SERVER");
+        _isOnline = false;
+      });
 
       // TODO HANDLE SOCKET EVENTS
-
       socket.on('message', (data) {
         handleMessage(data);
       });
@@ -85,7 +104,11 @@ class _MyHomePageState extends State<MyHomePage> {
     print(data);
   }
 
-  void handleMessage(Map<String, dynamic> data) {
+  void handleMessage(data) {
+    streamSocket.addResponse;
+    setState(() {
+      _messages.add(data);
+    });
     print(data);
   }
 
@@ -126,11 +149,15 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   TextEditingController messageController = new TextEditingController();
+
   @override
   Widget build(BuildContext context) {
+    print(_messages.toString());
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        foregroundColor: Colors.white,
+        backgroundColor: _isOnline ? Colors.black : Colors.redAccent,
       ),
       body: Center(
         child: Column(
@@ -147,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
               controller: messageController,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
-                hintText: 'Enter a search term',
+                hintText: 'Type a message',
               ),
             ),
             ElevatedButton(
@@ -159,14 +186,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 "Send Message",
               ),
             ),
-            StreamBuilder(
-              stream: streamSocket.getResponse,
-              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                return Container(
-                  child: Text("-${snapshot.data}"),
-                );
-              },
+            Container(
+              height: 200.0,
+              child: ListView.builder(
+                  itemCount: _messages == null ? 0 : _messages.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Text(_messages[index]["message"]);
+                  }),
             ),
+            // StreamBuilder(
+            //   stream: streamSocket.getResponse,
+            //   builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+            //     return Text("-${snapshot.data}");
+            //   },
+            // ),
           ],
         ),
       ),
