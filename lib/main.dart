@@ -2,22 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'home_page.dart';
+import 'screens/home_page.dart';
 
 Future<void> main() async {
   runApp(MyApp());
-}
-
-class StreamSocket {
-  final _socketResponse = StreamController<String>();
-
-  void Function(String) get addResponse => _socketResponse.sink.add;
-
-  Stream<String> get getResponse => _socketResponse.stream;
-
-  void dispose() {
-    _socketResponse.close();
-  }
 }
 
 class MyApp extends StatelessWidget {
