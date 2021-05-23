@@ -4,8 +4,8 @@ import 'package:flutter_socket/controllers/chat_controller.dart';
 // import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:get/get.dart';
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({
+class MessagingScreen extends StatefulWidget {
+  MessagingScreen({
     Key key,
     @required this.title,
   }) : super(key: key);
@@ -13,18 +13,15 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _MessagingScreenState createState() => _MessagingScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MessagingScreenState extends State<MessagingScreen> {
   ChatController chatController;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    // Call function to attempt to connect to server
-    chatController = Get.put(ChatController());
-    chatController.connectToServer();
+    chatController = Get.find<ChatController>();
   }
 
   TextEditingController messageController = new TextEditingController();
