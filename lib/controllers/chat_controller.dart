@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_socket/models/message_model.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -6,7 +7,7 @@ class ChatController extends GetxController {
   IO.Socket _socket;
   var socketId;
   bool isOnline = false;
-  List<Map<String, dynamic>> messages = [];
+  List<MessageModel> messages = [];
   ScrollController scrollController = new ScrollController();
 
   void connectToServer() {
@@ -57,8 +58,8 @@ class ChatController extends GetxController {
   }
 
   void handleMessage(data) {
-    // streamSocket.addResponse;
-    messages.add(data);
+    var msg = new MessageModel.fromJson(data);
+    messages.add(msg);
     update();
     scrollController.animateTo(
       scrollController.position.maxScrollExtent + 70.0,
@@ -66,7 +67,6 @@ class ChatController extends GetxController {
       curve: Curves.easeInOut,
     );
     update();
-    print(data);
   }
 
   sendTyping(bool typing) {
@@ -77,13 +77,14 @@ class ChatController extends GetxController {
   }
 
   sendMessage(String message) {
+    MessageModel newMessage = new MessageModel(
+        date: DateTime.now().millisecondsSinceEpoch,
+        sender: _socket.id,
+        content: message);
+
     _socket.emit(
       "message",
-      {
-        "id": _socket.id,
-        "message": message, // Message to be sent
-        "timestamp": DateTime.now().millisecondsSinceEpoch,
-      },
+      {newMessage.toJson()},
     );
   }
 }

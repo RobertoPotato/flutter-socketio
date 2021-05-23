@@ -1,6 +1,6 @@
 class MessageModel {
   final String sender;
-  final String date;
+  final int date;
   final String content;
 
   MessageModel({
@@ -8,4 +8,13 @@ class MessageModel {
     this.date,
     this.content,
   });
+
+  MessageModel.fromJson(Map<String, dynamic> json)
+      : sender = json["sender"],
+        date = json["date"],
+        content = json["content"];
+
+  Map<String, dynamic> toJson() {
+    return {"sender": sender, "date": date, "content": content};
+  }
 }

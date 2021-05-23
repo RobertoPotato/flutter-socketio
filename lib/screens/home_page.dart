@@ -47,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
                     return chatController.socketId ==
-                            chatController.messages[index]["id"]
+                            chatController.messages[index].sender
                         ? Bubble(
                             nip: BubbleNip.rightBottom,
                             elevation: 2.0,
@@ -55,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             margin: BubbleEdges.only(top: 10, right: 10.0),
                             color: Color.fromRGBO(225, 255, 199, 1.0),
                             child: Text(
-                              chatController.messages[index]["message"],
+                              chatController.messages[index].content,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 18.0,
@@ -71,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             alignment: Alignment.bottomLeft,
                             margin: BubbleEdges.only(top: 10, left: 10.0),
                             child: Text(
-                              chatController.messages[index]["message"],
+                              chatController.messages[index].content,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 18.0,
