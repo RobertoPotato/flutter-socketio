@@ -23,23 +23,47 @@ class _ChatsScreenState extends State<ChatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("CHAT SCREEN USER NAME = ${chatController.user.toString()}");
     return SafeArea(
       child: Scaffold(
-        body: Column(
-          children: [
-            ListTile(
-              leading: Material(
-                child: Padding(
-                  padding: EdgeInsets.all(10.0),
-                  child: Text("MD"),
+        appBar: AppBar(
+          title: Text("${chatController.user}"),
+          backgroundColor: Colors.black,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                child: Text(
+                  "${chatController.isOnline ? "Online" : "Offline"}",
+                  style: TextStyle(
+                    color: chatController.isOnline ? Colors.green : Colors.grey,
+                  ),
                 ),
               ),
-              title: Text("Mr Doe"),
-              onTap: () {
-                Get.to(() => MessagingScreen(title: "Mr Doe"));
-              },
-            )
+            ),
           ],
+        ),
+        body: GetBuilder<ChatController>(
+          builder: (GetxController controller) {
+            //TODO Compare users to see if their id matches current user. If so, don't show their chats here
+            return ListView.builder(
+              itemCount: chatController.users == null
+                  ? 0
+                  : chatController.users.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  leading: Icon(Icons.person),
+                  title: Text(chatController.users[index]["userName"]),
+                  onTap: () {
+                    Get.to(() => MessagingScreen(
+                          title: chatController.users[index]["userName"],
+                          socket: chatController.users[index]["userName"],
+                        ));
+                  },
+                );
+              },
+            );
+          },
         ),
       ),
     );

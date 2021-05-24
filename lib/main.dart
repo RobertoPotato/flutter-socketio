@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_socket/controllers/chat_controller.dart';
-import 'package:flutter_socket/screens/chats_screen.dart';
+import 'package:flutter_socket/screens/signup_screen.dart';
 import 'package:get/get.dart';
 
 Future<void> main() async {
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: ChatsScreen(),
+      home: SignUp(),
       initialBinding: BindingsBuilder(() => {
             Get.put(ChatController()),
           }),

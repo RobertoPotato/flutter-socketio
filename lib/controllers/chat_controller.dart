@@ -3,12 +3,25 @@ import 'package:flutter_socket/models/message_model.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
+/// Process:
+/// 1. Connection is created
+/// 2. User Joins server => join
+/// 3. User receives list of users in server
+/// 4. User can send and receive messages etc
+
 class ChatController extends GetxController {
   IO.Socket _socket;
   var socketId;
+  var user;
   bool isOnline = false;
   List<MessageModel> messages = [];
+  List users = [];
   ScrollController scrollController = new ScrollController();
+
+  void setUser({@required String email}) {
+    user = email;
+    update();
+  }
 
   void connectToServer() {
     try {
@@ -18,13 +31,19 @@ class ChatController extends GetxController {
       });
 
       socket.connect();
+      isOnline = true;
+      update();
 
       _socket = socket;
       socket.onConnect((data) {
-        print("CONNECTED TO SERVER - $data");
-        isOnline = true;
-        update();
+        print("CONNECTED TO SERVER");
         socketId = socket.id;
+        update();
+        _socket.emit(
+          "join",
+          user,
+        );
+        isOnline = true;
         update();
       });
 
@@ -37,6 +56,7 @@ class ChatController extends GetxController {
       socket.onDisconnect((data) {
         print("DISCONNECTED FROM SERVER");
         isOnline = false;
+        update();
       });
 
       // TODO HANDLE SOCKET EVENTS
@@ -44,12 +64,22 @@ class ChatController extends GetxController {
         handleMessage(data);
       });
 
+      socket.on('userList', (data) {
+        handleUsersList(data);
+      });
+
       socket.on('typing', handleTyping);
 
-      socket.on('disconnect', (_) => print('disconnect'));
+      // socket.on('disconnect', (_) => print('disconnect'));
     } catch (e) {
       print(e);
     }
+  }
+
+  void handleUsersList(data) {
+    users.add(data[0]);
+    update();
+    print("ALL USERS = ${users.toString()}");
   }
 
   void handleTyping(Map<String, dynamic> data) {
@@ -61,26 +91,31 @@ class ChatController extends GetxController {
     var msg = new MessageModel.fromJson(data);
     messages.add(msg);
     update();
-    scrollController.animateTo(
-      scrollController.position.maxScrollExtent + 70.0,
-      duration: Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-    );
-    update();
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        scrollController.position.maxScrollExtent + 70.0,
+        duration: Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
-  sendTyping(bool typing) {
+  void sendTyping(bool typing) {
     _socket.emit("typing", {
       "id": _socket.id,
       "typing": typing,
     });
   }
 
-  sendMessage(String message) {
+  void sendMessage({@required String message, @required String receiver}) {
     MessageModel newMessage = new MessageModel(
-        date: DateTime.now().millisecondsSinceEpoch,
-        sender: _socket.id,
-        content: message);
+      receiver: receiver,
+      date: DateTime.now().millisecondsSinceEpoch,
+      sender: _socket.id,
+      content: message,
+    );
+
+    print("${newMessage.toJson().toString()}");
 
     _socket.emit(
       "message",

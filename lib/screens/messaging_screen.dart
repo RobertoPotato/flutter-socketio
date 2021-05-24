@@ -8,9 +8,11 @@ class MessagingScreen extends StatefulWidget {
   MessagingScreen({
     Key key,
     @required this.title,
+    @required this.socket,
   }) : super(key: key);
 
   final String title;
+  final String socket;
 
   @override
   _MessagingScreenState createState() => _MessagingScreenState();
@@ -18,6 +20,8 @@ class MessagingScreen extends StatefulWidget {
 
 class _MessagingScreenState extends State<MessagingScreen> {
   ChatController chatController;
+
+  //TODO Check if the user being messaged is online
   @override
   void initState() {
     super.initState();
@@ -108,8 +112,11 @@ class _MessagingScreenState extends State<MessagingScreen> {
               flex: 2,
               child: InkWell(
                 onTap: () {
-                  chatController.sendMessage(messageController.value.text);
+                  chatController.sendMessage(
+                      message: messageController.value.text,
+                      receiver: widget.socket);
                   messageController.clear();
+                  print("MESSAGE TO: ${widget.socket}");
                 },
                 child: Icon(
                   Icons.send_rounded,
