@@ -115,7 +115,8 @@ class ChatController extends GetxController {
       content: message,
     );
 
-    print("${newMessage.toJson().toString()}");
+    messages.add(newMessage);
+    update();
 
     _socket.emit(
       "message",

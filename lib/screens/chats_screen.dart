@@ -55,10 +55,12 @@ class _ChatsScreenState extends State<ChatsScreen> {
                   leading: Icon(Icons.person),
                   title: Text(chatController.users[index]["userName"]),
                   onTap: () {
-                    Get.to(() => MessagingScreen(
-                          title: chatController.users[index]["userName"],
-                          socket: chatController.users[index]["userName"],
-                        ));
+                    Get.to(
+                      () => MessagingScreen(
+                        title: chatController.users[index]["userName"],
+                        socket: chatController.users[index]["userName"],
+                      ),
+                    );
                   },
                 );
               },
